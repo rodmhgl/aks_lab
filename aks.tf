@@ -48,16 +48,20 @@ resource "azurerm_kubernetes_cluster" "aks" {
   oidc_issuer_enabled       = true
   workload_identity_enabled = true
   tags                      = azurerm_resource_group.aks.tags
+  
+  # microsoft_defender {
+  #   log_analytics_workspace_id = 
+  # }
 
   # service_mesh_profile {
   #   mode                             = "Istio"
   #   external_ingress_gateway_enabled = true
   # }
 
-  network_profile {
-    network_plugin = "azure"
-    load_balancer_sku = "Standard"
-  }
+  # network_profile {
+  #   network_plugin = "azure"
+  #   load_balancer_sku = "standard"
+  # }
 
   monitor_metrics {}
 
