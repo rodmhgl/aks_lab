@@ -13,14 +13,14 @@
 
 #region AKS User-Assigned Identities
 resource "azurerm_user_assigned_identity" "aks" {
-  name                = "k8s-scaling-aks-identity"
+  name                = "aks-${local.name}-cluster-identity"
   resource_group_name = azurerm_resource_group.aks.name
   location            = azurerm_resource_group.aks.location
   tags                = azurerm_resource_group.aks.tags
 }
 
 resource "azurerm_user_assigned_identity" "kubelet" {
-  name                = "k8s-scaling-kubelet-identity"
+  name                = "aks-${local.name}-kubelet-identity"
   resource_group_name = azurerm_resource_group.aks.name
   location            = azurerm_resource_group.aks.location
   tags                = azurerm_resource_group.aks.tags
@@ -36,18 +36,28 @@ resource "azurerm_role_assignment" "managed_identity_operator" {
 
 resource "azurerm_kubernetes_cluster" "aks" {
   #TODO: This should be privatized, but who has the time?
-  name                      = "k8s-scaling-aks"
+  name                      = "aks-${local.name}"
   location                  = azurerm_resource_group.aks.location
   resource_group_name       = azurerm_resource_group.aks.name
   sku_tier                  = "Standard"
   azure_policy_enabled      = true
   cost_analysis_enabled     = false
   image_cleaner_enabled     = false
-  dns_prefix                = "k8s-scaling-aks"
+  dns_prefix                = "aks-${local.name}"
   automatic_channel_upgrade = "stable"
   oidc_issuer_enabled       = true
   workload_identity_enabled = true
   tags                      = azurerm_resource_group.aks.tags
+
+  # service_mesh_profile {
+  #   mode                             = "Istio"
+  #   external_ingress_gateway_enabled = true
+  # }
+
+  network_profile {
+    network_plugin = "azure"
+    load_balancer_sku = "Standard"
+  }
 
   monitor_metrics {}
 

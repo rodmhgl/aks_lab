@@ -1,5 +1,5 @@
 resource "azurerm_monitor_workspace" "metrics" {
-  name                = "amon-aks"
+  name                = "amon-${local.name}"
   resource_group_name = azurerm_resource_group.aks.name
   location            = azurerm_resource_group.aks.location
 }
