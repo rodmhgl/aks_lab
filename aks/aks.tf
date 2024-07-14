@@ -12,17 +12,25 @@
 #endregion
 
 #region AKS User-Assigned Identities
-resource "azurerm_user_assigned_identity" "aks" {
-  name                = "aks-${local.name}-cluster-identity"
+module "cluster-uai" {
+  source  = "Azure/avm-res-managedidentity-userassignedidentity/azurerm"
+  version = "0.3.1"
+
+  name                = "cluster-${module.naming.user_assigned_identity.name}"
   resource_group_name = azurerm_resource_group.aks.name
   location            = azurerm_resource_group.aks.location
+  enable_telemetry    = false
   tags                = azurerm_resource_group.aks.tags
 }
 
-resource "azurerm_user_assigned_identity" "kubelet" {
-  name                = "aks-${local.name}-kubelet-identity"
+module "kubelet-uai" {
+  source  = "Azure/avm-res-managedidentity-userassignedidentity/azurerm"
+  version = "0.3.1"
+
+  name                = "kubelet-${module.naming.user_assigned_identity.name}"
   resource_group_name = azurerm_resource_group.aks.name
   location            = azurerm_resource_group.aks.location
+  enable_telemetry    = false
   tags                = azurerm_resource_group.aks.tags
 }
 #endregion
@@ -31,7 +39,7 @@ resource "azurerm_user_assigned_identity" "kubelet" {
 resource "azurerm_role_assignment" "managed_identity_operator" {
   scope                = data.azurerm_subscription.current.id
   role_definition_name = "Managed Identity Operator"
-  principal_id         = azurerm_user_assigned_identity.aks.principal_id
+  principal_id         = module.cluster-uai.principal_id
 }
 
 resource "azurerm_kubernetes_cluster" "aks" {
@@ -48,7 +56,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   oidc_issuer_enabled       = true
   workload_identity_enabled = true
   tags                      = azurerm_resource_group.aks.tags
-  
+
   # microsoft_defender {
   #   log_analytics_workspace_id = 
   # }
@@ -89,7 +97,9 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   identity {
     type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.aks.id]
+    identity_ids = [
+      module.cluster-uai.resource.id
+    ]
   }
 
   key_vault_secrets_provider {
@@ -98,9 +108,9 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 
   kubelet_identity {
-    client_id                 = azurerm_user_assigned_identity.kubelet.client_id
-    object_id                 = azurerm_user_assigned_identity.kubelet.principal_id
-    user_assigned_identity_id = azurerm_user_assigned_identity.kubelet.id
+    client_id                 = module.kubelet-uai.resource.client_id
+    object_id                 = module.kubelet-uai.principal_id
+    user_assigned_identity_id = module.kubelet-uai.resource.id
   }
 
   depends_on = [
@@ -111,4 +121,9 @@ resource "azurerm_kubernetes_cluster" "aks" {
 resource "local_file" "kubeconfig" {
   filename = "/Users/rodneystewart/.kube/config"
   content  = azurerm_kubernetes_cluster.aks.kube_config_raw
+}
+
+output "kubeconfig" {
+  value = local_file.kubeconfig.content
+  sensitive = true
 }

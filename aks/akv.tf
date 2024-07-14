@@ -18,6 +18,6 @@ resource "azurerm_key_vault" "aks" {
 #TODO: Reduce these permisions to the minimum required
 resource "azurerm_role_assignment" "akv_admin" {
   role_definition_name = "Key Vault Administrator"
-  principal_id         = azurerm_user_assigned_identity.aks.principal_id
+  principal_id         = module.cluster-uai.principal_id
   scope                = azurerm_key_vault.aks.id
 }
