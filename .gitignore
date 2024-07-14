@@ -6,3 +6,5 @@ terraform.tfstate
 *.backup
 
 aks/.terraform.lock.hcl
+flux/.terraform.lock.hcl
+aks/tfplan

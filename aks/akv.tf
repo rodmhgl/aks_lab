@@ -1,6 +1,6 @@
 resource "azurerm_key_vault" "aks" {
   #TODO: This should be privatized, but who has the time?
-  name                            = "k8s-scaling-aks-kv"
+  name                            = module.naming_aks.key_vault.name_unique
   location                        = azurerm_resource_group.aks.location
   resource_group_name             = azurerm_resource_group.aks.name
   tenant_id                       = data.azurerm_client_config.current.tenant_id

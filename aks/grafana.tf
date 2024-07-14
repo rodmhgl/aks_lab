@@ -1,5 +1,5 @@
 resource "azurerm_dashboard_grafana" "metrics" {
-  name                = "amg-${local.name}"
+  name                = module.naming_aks.dashboard.name
   resource_group_name = azurerm_resource_group.aks.name
   location            = azurerm_resource_group.aks.location
 

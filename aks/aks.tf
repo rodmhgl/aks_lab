@@ -16,7 +16,7 @@ module "cluster-uai" {
   source  = "Azure/avm-res-managedidentity-userassignedidentity/azurerm"
   version = "0.3.1"
 
-  name                = "cluster-${module.naming.user_assigned_identity.name}"
+  name                = "cluster-${module.naming_aks.user_assigned_identity.name}"
   resource_group_name = azurerm_resource_group.aks.name
   location            = azurerm_resource_group.aks.location
   enable_telemetry    = false
@@ -27,7 +27,7 @@ module "kubelet-uai" {
   source  = "Azure/avm-res-managedidentity-userassignedidentity/azurerm"
   version = "0.3.1"
 
-  name                = "kubelet-${module.naming.user_assigned_identity.name}"
+  name                = "kubelet-${module.naming_aks.user_assigned_identity.name}"
   resource_group_name = azurerm_resource_group.aks.name
   location            = azurerm_resource_group.aks.location
   enable_telemetry    = false
@@ -44,7 +44,7 @@ resource "azurerm_role_assignment" "managed_identity_operator" {
 
 resource "azurerm_kubernetes_cluster" "aks" {
   #TODO: This should be privatized, but who has the time?
-  name                      = "aks-${local.name}"
+  name                      = module.naming_aks.kubernetes_cluster.name
   location                  = azurerm_resource_group.aks.location
   resource_group_name       = azurerm_resource_group.aks.name
   sku_tier                  = "Standard"
@@ -96,7 +96,7 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 
   identity {
-    type         = "UserAssigned"
+    type = "UserAssigned"
     identity_ids = [
       module.cluster-uai.resource.id
     ]
@@ -121,9 +121,4 @@ resource "azurerm_kubernetes_cluster" "aks" {
 resource "local_file" "kubeconfig" {
   filename = "/Users/rodneystewart/.kube/config"
   content  = azurerm_kubernetes_cluster.aks.kube_config_raw
-}
-
-output "kubeconfig" {
-  value = local_file.kubeconfig.content
-  sensitive = true
 }
