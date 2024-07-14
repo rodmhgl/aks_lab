@@ -4,3 +4,5 @@ terraform.tfstate
 *.tfstate.*
 *.tfstate
 *.backup
+
+aks/.terraform.lock.hcl
