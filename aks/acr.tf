@@ -68,7 +68,7 @@ module "acr_uai" {
 #       key_size = 2048
 #     }
 #   }
-  
+
 #   role_assignments = {
 #     deployment_user_kv_admin = {
 #       role_definition_id_or_name = "Key Vault Administrator"
@@ -79,11 +79,11 @@ module "acr_uai" {
 #       principal_id               = module.acr_uai.principal_id
 #     }
 #   }
-  
+
 #   wait_for_rbac_before_key_operations = {
 #     create = "60s"
 #   }
-  
+
 #   network_acls = {
 #     bypass   = "AzureServices"
 #     ip_rules = ["${data.http.ip.response_body}/32"]
